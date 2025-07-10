@@ -1,0 +1,45 @@
+func _input(event):
+	# Camera switch
+	if event.is_action_pressed("switch_camera"):
+		current_index = (current_index + 1) % cam_modes.size()
+		set_active_camera(cam_modes[current_index])
+
+	# Toggle block UI
+	if event.is_action_pressed("toggle_block_ui"):
+		block_selector_ui.visible = !block_selector_ui.visible
+
+	# Block placement
+	if event.is_action_pressed("place_block") and ray.is_colliding() and not block_selector_ui.visible:
+		var pos = ray.get_collision_point()
+		var normal = ray.get_collision_normal()
+		var place_pos = (pos + normal * 0.5).snapped(Vector3.ONE)
+
+		if block_types.has(selected_block):
+			var block = block_types[selected_block].instantiate()
+			get_tree().current_scene.add_child(block)
+			block.global_transform.origin = place_pos
+		else:
+			push_error("Block type '%s' not found in block_types!" % selected_block)
+
+
+	# Block destruction
+
+
+
+	# Camera rotation
+	if event is InputEventMouseMotion:
+		if cam_first.current:
+			yaw -= event.relative.x * rotation_sensitivity
+			pitch -= event.relative.y * rotation_sensitivity
+			pitch = clamp(pitch, deg_to_rad(-80), deg_to_rad(80))
+
+			player.rotation.y = yaw
+			cam_first.rotation.x = pitch
+
+		elif cam_third.current and Input.is_action_pressed("rotate_camera"):
+			yaw -= event.relative.x * rotation_sensitivity
+			pitch -= event.relative.y * rotation_sensitivity
+			pitch = clamp(pitch, deg_to_rad(-45), deg_to_rad(45))
+
+			player.rotation.y = yaw
+			cam_third.rotation.x = pitch
